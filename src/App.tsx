@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { projectId } from "../utils/supabase/info";
 
-const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-37003faf`;
+const SMART_ACTION_URL = `https://${projectId}.supabase.co/functions/v1/smart-action`;
 
 type IconName = "calendar" | "chevron" | "minus" | "plus" | "sparkle" | "arrow";
 
@@ -305,9 +305,11 @@ export default function App() {
             onClick={async () => {
               if (reservationNumber || sending) return;
               setSending(true);
-              let resNum = `HS-${checkIn.replace(/-/g, "")}-001`;
+              const dateStr = checkIn.replace(/-/g, "");
+              const seq = String(Math.floor(Math.random() * 900) + 100);
+              const resNum = `HS-${dateStr}-${seq}`;
               try {
-                const resp = await fetch(`${SERVER_URL}/smart-action`, {
+                await fetch(SMART_ACTION_URL, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
@@ -316,12 +318,9 @@ export default function App() {
                     guests,
                     plan: room.title,
                     totalPrice: room.price,
+                    reservationNumber: resNum,
                   }),
                 });
-                if (resp.ok) {
-                  const data = await resp.json();
-                  resNum = data.reservationNumber ?? resNum;
-                }
               } catch (_) {
                 // proceed regardless
               }

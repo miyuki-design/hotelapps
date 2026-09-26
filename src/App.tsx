@@ -187,7 +187,7 @@ export default function App() {
           <div className="hero-copy">
             <p className="hero-kicker">A NEW HORIZON OF SHINSHU</p>
             <p className="hero-title">いつもの街に、　　静かな余白を。</p>
-            <p className="hero-description">篠ノ井で過ごす、穏やかなひととき。</p>
+            <p className="hero-description">篠ノ井で過ごす、<br/>穏やかなひととき。</p>
           </div>
           <div className="room-badge">
             <span>ROOMS</span>

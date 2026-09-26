@@ -131,8 +131,8 @@ const rooms = [
 export default function App() {
   const [guests, setGuests] = useState(2);
   const [selectedRoom, setSelectedRoom] = useState("moon");
-  const [confirmed, setConfirmed] = useState(false);
   const [sending, setSending] = useState(false);
+  const [reservationNumber, setReservationNumber] = useState<string | null>(null);
   const [checkIn, setCheckIn] = useState(() => toDateValue(new Date()));
   const [checkOut, setCheckOut] = useState(() => toDateValue(new Date(Date.now() + 86_400_000)));
   const room = rooms.find((item) => item.id === selectedRoom) ?? rooms[0];
@@ -186,7 +186,7 @@ export default function App() {
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">A NEW HORIZON OF SHINSHU</p>
-            <p className="hero-title">いつもの街に、<br/>静かな余白を。</p>
+            <p className="hero-title">いつもの街に、<br />静かな余白を。</p>
             <p className="hero-description">篠ノ井で過ごす、穏やかなひととき。</p>
           </div>
           <div className="room-badge">
@@ -301,35 +301,56 @@ export default function App() {
             <span>{guests}名</span>
           </div>
           <Button
-            className={`reserve-button ${confirmed ? "confirmed" : ""}`}
+            className={`reserve-button ${reservationNumber ? "confirmed" : ""}`}
             onClick={async () => {
-              if (confirmed || sending) return;
+              if (reservationNumber || sending) return;
               setSending(true);
+              let resNum = `HS-${checkIn.replace(/-/g, "")}-001`;
               try {
-                await fetch(`${SERVER_URL}/notify-reservation`, {
+                const resp = await fetch(`${SERVER_URL}/smart-action`, {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
-                    plan: room.title,
                     checkIn,
                     checkOut,
-                    nights,
                     guests,
+                    plan: room.title,
+                    totalPrice: room.price,
                   }),
                 });
+                if (resp.ok) {
+                  const data = await resp.json();
+                  resNum = data.reservationNumber ?? resNum;
+                }
               } catch (_) {
-                // 通知失敗でも予約完了扱いにする
+                // proceed regardless
               }
-              setConfirmed(true);
+              setReservationNumber(resNum);
               setSending(false);
             }}
             ariaLabel="この内容で予約する"
           >
-            <span>{confirmed ? "予約リクエストを受け付けました" : sending ? "送信中…" : "この内容で予約する"}</span>
-            {confirmed ? <Icon name="sparkle" /> : <Icon name="arrow" />}
+            <span>{reservationNumber ? "予約リクエストを受け付けました" : sending ? "送信中…" : "この内容で予約する"}</span>
+            {reservationNumber ? <Icon name="sparkle" /> : <Icon name="arrow" />}
           </Button>
           <p className="summary-note">現地決済 · 当日までキャンセル無料</p>
         </section>
+
+        {reservationNumber && (
+          <section className="completion-card">
+            <div className="completion-badge">
+              <Icon name="sparkle" className="completion-icon" />
+              <span>RESERVATION CONFIRMED</span>
+            </div>
+            <p className="completion-num">{reservationNumber}</p>
+            <p className="completion-message">ご予約ありがとうございます。<br />当日、篠ノ井でお会いできることを楽しみにしております。</p>
+            <div className="completion-meta">
+              <span>{parseDate(checkIn).getMonth() + 1}/{parseDate(checkIn).getDate()} — {parseDate(checkOut).getMonth() + 1}/{parseDate(checkOut).getDate()}</span>
+              <span>{nights}泊 · {guests}名</span>
+              <span>{room.title}</span>
+            </div>
+          </section>
+        )}
 
         <footer className="footer">
           <span>HOTEL SHINONOI</span>

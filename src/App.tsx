@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { projectId } from "../utils/supabase/info";
+import { projectId, publicAnonKey } from "../utils/supabase/info";
 
 const SMART_ACTION_URL = `https://${projectId}.supabase.co/functions/v1/smart-action`;
 
@@ -311,7 +311,11 @@ export default function App() {
               try {
                 await fetch(SMART_ACTION_URL, {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${publicAnonKey}`,
+                    "apikey": publicAnonKey,
+                  },
                   body: JSON.stringify({
                     checkIn,
                     checkOut,

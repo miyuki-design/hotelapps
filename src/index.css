@@ -577,6 +577,63 @@ button {
   text-align: center;
 }
 
+.completion-card {
+  margin: 0 16px 24px;
+  padding: 28px 24px;
+  background: linear-gradient(135deg, #161f52 0%, #1a1060 100%);
+  border: 1px solid rgba(255, 79, 154, 0.35);
+  border-radius: 20px;
+  text-align: center;
+}
+
+.completion-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 14px;
+  background: rgba(255, 79, 154, 0.15);
+  border: 1px solid rgba(255, 79, 154, 0.4);
+  border-radius: 100px;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  color: var(--color-pink-soft);
+  letter-spacing: 0.08em;
+  margin-bottom: 20px;
+}
+
+.completion-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.completion-num {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-pink);
+  letter-spacing: 0.05em;
+  margin: 0 0 12px;
+}
+
+.completion-message {
+  font-size: 10px;
+  line-height: 1.75;
+  color: var(--color-cream);
+  opacity: 0.85;
+  margin: 0 0 20px;
+}
+
+.completion-meta {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--font-mono);
+  font-size: 7px;
+  color: var(--color-lilac);
+  opacity: 0.75;
+  flex-wrap: wrap;
+}
+
 .footer {
   padding: 28px 2px 0;
   color: rgba(200, 183, 255, 0.42);

@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { projectId } from "../utils/supabase/info";
+
+const SERVER_URL = `https://${projectId}.supabase.co/functions/v1/make-server-37003faf`;
 
 type IconName = "calendar" | "chevron" | "minus" | "plus" | "sparkle" | "arrow";
 
@@ -111,15 +114,15 @@ function DateField({
 const rooms = [
   {
     id: "moon",
-    label: "MOON",
-    title: "ムーン・ツイン",
+    label: "Full",
+    title: "３食付き（休日）",
     detail: "2名・45㎡・マウンテンビュー",
     price: "¥0",
   },
   {
     id: "orbit",
-    label: "ORBIT",
-    title: "オービット・キング",
+    label: "Custom",
+    title: "カスタム（平日）",
     detail: "2名・45㎡・マウンテンビュー",
     price: "¥0",
   },
@@ -129,8 +132,9 @@ export default function App() {
   const [guests, setGuests] = useState(2);
   const [selectedRoom, setSelectedRoom] = useState("moon");
   const [confirmed, setConfirmed] = useState(false);
-  const [checkIn, setCheckIn] = useState("2026-06-18");
-  const [checkOut, setCheckOut] = useState("2026-06-19");
+  const [sending, setSending] = useState(false);
+  const [checkIn, setCheckIn] = useState(() => toDateValue(new Date()));
+  const [checkOut, setCheckOut] = useState(() => toDateValue(new Date(Date.now() + 86_400_000)));
   const room = rooms.find((item) => item.id === selectedRoom) ?? rooms[0];
   const nights = Math.max(
     1,
@@ -182,7 +186,7 @@ export default function App() {
           </div>
           <div className="hero-copy">
             <p className="hero-kicker">A NEW HORIZON OF SHINSHU</p>
-            <p className="hero-title">いつもの街に、静かな余白を。</p>
+            <p className="hero-title">いつもの街に、　　静かな余白を。</p>
             <p className="hero-description">篠ノ井で過ごす、穏やかなひととき。</p>
           </div>
           <div className="room-badge">
@@ -243,7 +247,7 @@ export default function App() {
           <div className="section-heading room-heading">
             <div>
               <p className="section-index">02 / SELECT A ROOM</p>
-              <p className="section-title">お部屋を選択</p>
+              <p className="section-title">宿泊プランを選択</p>
             </div>
             <span className="availability">2 ROOMS AVAILABLE</span>
           </div>
@@ -269,7 +273,7 @@ export default function App() {
                   </span>
                   <span className="room-price">
                     <strong>{item.price}</strong>
-                    <small>/ 1 NIGHT</small>
+                    <small>/ {nights} NIGHT{nights !== 1 ? "S" : ""}</small>
                   </span>
                 </Button>
               );
@@ -298,10 +302,30 @@ export default function App() {
           </div>
           <Button
             className={`reserve-button ${confirmed ? "confirmed" : ""}`}
-            onClick={() => setConfirmed(true)}
+            onClick={async () => {
+              if (confirmed || sending) return;
+              setSending(true);
+              try {
+                await fetch(`${SERVER_URL}/notify-reservation`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    plan: room.title,
+                    checkIn,
+                    checkOut,
+                    nights,
+                    guests,
+                  }),
+                });
+              } catch (_) {
+                // 通知失敗でも予約完了扱いにする
+              }
+              setConfirmed(true);
+              setSending(false);
+            }}
             ariaLabel="この内容で予約する"
           >
-            <span>{confirmed ? "予約リクエストを受け付けました" : "この内容で予約する"}</span>
+            <span>{confirmed ? "予約リクエストを受け付けました" : sending ? "送信中…" : "この内容で予約する"}</span>
             {confirmed ? <Icon name="sparkle" /> : <Icon name="arrow" />}
           </Button>
           <p className="summary-note">現地決済 · 当日までキャンセル無料</p>
